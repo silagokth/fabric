@@ -18,6 +18,9 @@ This is the VHDL description of the DRRA and DiMArch CGRA fabric developed by KT
  - Dimitrios Stathis <stathis@kth.se>
  - Yu Yang <yuyang2@kth.se>
  
+# Documentation 
+
+For documentation see: https://github.com/silagokth/SiLagoDoc
 
 # LICENSE
 
