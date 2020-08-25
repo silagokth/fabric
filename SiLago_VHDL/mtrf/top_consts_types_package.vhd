@@ -1,6 +1,13 @@
 -------------------------------------------------------
---! @file
---! @brief Top Constant Package for the DRRA fabric.
+--! @file top_consts_types_package.vhd
+--! @brief 
+--! @details 
+--! @author Sadiq Hemani
+--! @version 1.0
+--! @date 2020-01-24
+--! @bug NONE
+--! @todo NONE
+--! @copyright  GNU Public License [GPL-3.0].
 -------------------------------------------------------
 ---------------- Copyright (c) notice -----------------------------------------
 --
@@ -12,33 +19,20 @@
 -- unaltered.
 -------------------------------------------------------------------------------
 -- Title      : top_consts_types_package
--- Project    : SiLago
+-- Project    : MTRF Fabric
 -------------------------------------------------------------------------------
 -- File       : top_consts_types_package.vhd
+-- Supervisor : Nasim Farahini
 -- Author     : Sadiq Hemani <sadiq@kth.se>, Hojat Khoshrowjerdi <hojatk@kth.se>, Jingying Dong <jdon@kth.se>
 -- Company    : KTH
 -- Created    : 2013-09-05
 -- Last update: 2014-10-26
--- Platform   : SiLago
+-- Platform   : 
 -- Standard   : VHDL'87
 -------------------------------------------------------------------------------
--- Description: To be included in all MTRF components and the top module. Includes
--- all the required constants and type declarations for the Sequencer, DPU and
--- Register file (with AGUs). The sequencer constants
--- have been declared in a parametric style to facilitate any future instruction
--- format changes.
--------------------------------------------------------------------------------
--- Copyright (c) 2013 
+-- Copyright (c) 2014
 -------------------------------------------------------------------------------
 -- Contact    : Dimitrios Stathis <stathis@kth.se>
--------------------------------------------------------------------------------
--- Revisions  :
--- Date        Version  Author  		  Description
--- 2013-09-05  1.0      sadiq			  Created
--- 2014-02-25  2.0      Nasim Farahini    Modified
--- 2014-05-10  3.0      Naism Farahini    Raccu and loop instructions are added
--- 2015-02-22  4.0      Hassan Sohofi     Updating branch and jump instructions
--- 2019-03-11  4.1      Dimitrios Stathis Include lic. and comments
 -------------------------------------------------------------------------------
 
 --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -46,7 +40,7 @@
 --This file is part of SiLago.                                             #
 --                                                                         #
 --    SiLago platform source code is distributed freely: you can           #
---    redistribute it and/or modify it under the terms of the GNU    	     #
+--    redistribute it and/or modify it under the terms of the GNU          #
 --    General Public License as published by the Free Software Foundation, #
 --    either version 3 of the License, or (at your option) any             #
 --    later version.                                                       #
@@ -61,21 +55,12 @@
 --                                                                         #
 --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
---! IEEE standard library.
 LIBRARY ieee;
---! Use standard library.
 USE ieee.std_logic_1164.ALL;
---! Use numeric library.
 USE ieee.numeric_std.ALL;
---! Import and use the utility package.
 USE work.util_package.ALL;
---! Import and use the hw setting package.
 USE work.hw_setting.ALL;
-
-
---! @brief Top Constant Package for the DRRA fabric.
---! @details This package contain the basic constants
---! and type definitions for the DRRA fabric.
+--use work.SINGLEPORT_SRAM_AGU_types_n_constants.all;
 PACKAGE top_consts_types_package IS
 
 	--<GLOBAL CONSTANTS BEGIN>--
@@ -207,7 +192,8 @@ PACKAGE top_consts_types_package IS
 	CONSTANT NUM_OF_REPT_EXT           : natural := 1;
 	CONSTANT REP_STEP_VALUE_EXT        : natural := 2;
 	CONSTANT FFT_END_STAGE             : natural := 3;
-	CONSTANT REFI3_UNUSED              : natural := 1; -- changed from 2 to 1 for sram_interface
+	--CONSTANR REFI3_UNUSED			   : natural := 1;
+	CONSTANT USE_COMPR           : natural := 1; -- changed from 2 to 1 for sram_interface
 
 	CONSTANT REPT_DELAY_RANGE_BASE  : natural := INSTR_CODE_RANGE_END - 2;
 	CONSTANT REPT_DELAY_RANGE_END   : natural := REPT_DELAY_RANGE_BASE - (REPT_DELAY - 1);
@@ -248,10 +234,13 @@ PACKAGE top_consts_types_package IS
 	CONSTANT FFT_END_STAGE_VECTOR_SIZE : natural := FFT_END_STAGE_RANGE_BASE - FFT_END_STAGE_RANGE_END + 1;
 
 	CONSTANT DIMARCH_MODE_BIT         : natural := FFT_END_STAGE_RANGE_END - 1;
-	CONSTANT REFI3_UNUSED_RANGE_BASE  : natural := DIMARCH_MODE_BIT - 1;
-	CONSTANT REFI3_UNUSED_RANGE_END   : natural := REFI3_UNUSED_RANGE_BASE - (REFI3_UNUSED - 1);
-	CONSTANT REFI3_UNUSED_VECTOR_SIZE : natural := REFI3_UNUSED_RANGE_BASE - REFI3_UNUSED_RANGE_END + 1;
-
+	--CONSTANT REFI3_UNUSED_RANGE_BASE  : natural := DIMARCH_MODE_BIT - 1;
+	--CONSTANT REFI3_UNUSED_RANGE_END   : natural := REFI3_UNUSED_RANGE_BASE - (REFI3_UNUSED - 1);
+	--CONSTANT REFI3_UNUSED_VECTOR_SIZE : natural := REFI3_UNUSED_RANGE_BASE - REFI3_UNUSED_RANGE_END + 1;
+	CONSTANT USE_COMPR_RANGE_BASE	: natural := DIMARCH_MODE_BIT - 1;
+	CONSTANT USE_COMPR_RANGE_END	: natural := USE_COMPR_RANGE_BASE - (USE_COMPR - 1);
+	CONSTANT USE_COMPR_VECTOR_SIZE	: natural := USE_COMPR_RANGE_BASE - USE_COMPR_RANGE_END +1;
+	
 	--<DPU INSTRUCTION TYPE CONSTANTS>--
 
 	CONSTANT DPU_MODE_SEL      : natural := 5;
@@ -683,7 +672,8 @@ PACKAGE top_consts_types_package IS
 		rpt_step_value_ext    : std_logic_vector(REP_STEP_VALUE_EXT_VECTOR_SIZE - 1 DOWNTO 0);
 		end_fft_stage         : std_logic_vector(FFT_END_STAGE_VECTOR_SIZE - 1 DOWNTO 0);
 		dimarch_mode          : std_logic;
-		refi3_unused          : std_logic_vector(REFI3_UNUSED_VECTOR_SIZE - 1 DOWNTO 0);
+		--refi3_unused        : std_logic_vector(REFI3_UNUSED_VECTOR_SIZE - 1 DOWNTO 0);
+		use_compr			  : std_logic; --std_logic_vector(USE_COMPR_VECTOR_SIZE - 1 downto 0);
 	END RECORD;
 
 	TYPE Dpu_instr_ty IS RECORD
@@ -803,6 +793,7 @@ PACKAGE top_consts_types_package IS
 	--<DPU CONSTANTS BEGIN>--
 
 	CONSTANT NR_OF_DPU_IN_PORTS      : natural := 4;
+	CONSTANT NR_OF_DPU_OUT_PORTS	 : natural := 2;
 	CONSTANT DPU_CTRL_OUT_WIDTH      : integer := 2;
 	CONSTANT DPU_IN_WIDTH            : integer := BITWIDTH;
 	CONSTANT DPU_MODE_CFG_WIDTH      : integer := DPU_MODE_SEL; --5
@@ -811,33 +802,55 @@ PACKAGE top_consts_types_package IS
 	CONSTANT SEQ_COND_STATUS_WIDTH   : integer := 2;
 	CONSTANT DPU_ACC_CLEAR_WIDTH     : integer := DPU_ACC_CLEAR_VECTOR_SIZE;
 	CONSTANT DPU_PROCESS_INOUT_WIDTH : integer := 2;
-
-	--dpu decimal and fractions of different parts
-	CONSTANT ACC_WIDTH : integer := 2*BITWIDTH + 2;
-
-	--dpu modes functions
-	CONSTANT MODE_0  : integer := 0;    -- idle mode
-	CONSTANT MODE_1  : integer := 1;    -- out_0 = [(in_0 + in_1) *in_2] + out_0_reg, out_1 = [(in_0 + in_1) *in_2] 
-	CONSTANT MODE_2  : integer := 2;    -- out_0 = (in_0 * in_2) + out_0_reg, out_1 = (in_0 * in_2)
-	CONSTANT MODE_3  : integer := 3;    -- out_0 = (in_0 * in_2) + in_3_reg, out_1 = (in_0 * in_2)
-	CONSTANT MODE_4  : integer := 4;    -- out_0 = (in_0 * in_2) + in_3, out_1 = in_1 - (in_0 * in_2)
-	CONSTANT MODE_5  : integer := 5;    -- out_0 = (in_0_reg * in_2) + in_3, out_1 = in_1 - (in_0_reg * in_2)
-	CONSTANT MODE_6  : integer := 6;    -- MAX MODE out0 = max(in0, max_tmp_reg), out1 = min(in0, min_tmp_reg)
-	CONSTANT MODE_7  : integer := 7;    -- absolute function sum(abs(a-b))
-	CONSTANT MODE_8  : integer := 8;    -- Counter Mode;
-	CONSTANT MODE_9  : integer := 9;    -- out_0 = arithmetic left shift; out_1 = arithmetic right shift 
-	CONSTANT MODE_10 : integer := 10;   -- out_0 = (in_2 + in_3), out_1 = (in_0 - in_1) 
-	CONSTANT MODE_11 : integer := 11;   -- in0 > in1 => out0 = 111...11 ;in2 > in3 => out1 = 111...11
-	CONSTANT MODE_12 : integer := 12;   -- dpu_acc_clear is used as a constant value
-	CONSTANT MODE_13 : integer := 13;   -- comparison with constant
-	CONSTANT MODE_20 : integer := 20;   -- sigmoid and tanh
-
-	-- dpu  to process inputs output  
-
-	CONSTANT PROCESS_NONE : natural := 0;
-	CONSTANT NEGATE_IN0   : natural := 1; -- negates in_0
-	CONSTANT NEGATE_IN1   : natural := 2; -- negates in_1
-	CONSTANT ABSOLUTE_OUT : natural := 3; -- abs(out_0) and abs(out_1)
+	--! All generics must be <= OUT_NUM: it doesn't make sense to get more results in parallel than the number of outputs
+	CONSTANT MULT_NUM		: integer := 2;
+	CONSTANT ADD_NUM		: integer := 2;
+	CONSTANT MAC_NUM		: integer := 2; --! MAC_NUM must be <= min(MULT_NUM, ADD_NUM)
+	CONSTANT OUT_NUM		: integer := NR_OF_DPU_OUT_PORTS;
+	CONSTANT SQUASH_NUM		: integer := 2; --! SQUASH_NUM must be <= MAC_NUM
+	CONSTANT MAXMIN_NUM		: integer := 2; 
+	CONSTANT DIV_NUM		: integer := 1; --! DIV_NUM must be >= SOFTMAX_NUM, <= OUT_NUM
+	CONSTANT EXP_NUM		: integer := 1; --! EXP_NUM must be = DIV_NUM
+	CONSTANT SHIFT_NUM		: integer := 2;
+	CONSTANT ELU_NUM		: integer := 1;
+	CONSTANT SOFTMAX_NUM	: integer := 1;  --! Softmax = min(NR_OF_DPU_IN_PORTS/2, NR_OF_DPU_IN_PORTS/2)
+	CONSTANT DPU_Q_FORMAT	: integer := 0; 	--! # of fractional bits
+	
+	CONSTANT IDLE		 : integer := 0;  -- out0, out1 = none
+	CONSTANT ADD		 : integer := 1;  -- out0 = in0 + in1 , out1 = in2 + in3
+	--CONSTANT ADD_ABS	 : integer := 2;  -- out0 = |in0 + in1| , out1 = |in2+in3|
+	CONSTANT ADD_3		 : integer := 2;  -- out0 = in0 + in1 + 1n2
+	CONSTANT ADD_ACC	 : integer := 3;  -- out0 = in0 + acc0 , out1 = in2 + acc1
+	CONSTANT ADD_CONST	 : integer := 4;  -- out0 = in0 + dpureg0 , out1 = in2 + dpureg1
+	CONSTANT SUBT		 : integer := 5;  -- out0 = in1 - in0 , out1 = in3 - in2
+	CONSTANT SUBT_ABS	 : integer := 6;  -- out0 = |in1 - in0| , out1 = |in3 - in2|
+	CONSTANT SUBT_ACC	 : integer := 7;  -- out0 = acc0 - in0 , out1 = acc1 - in2
+	CONSTANT MULT		 : integer := 8;  -- out0 = in0 * in1 , out1 = in2 * in3
+	--CONSTANT MULT_NEG	 : integer := 9;  -- out0 = -in0 * in1 , out1 = -in2 * in3
+	CONSTANT MULT_ADD	 : integer := 9;  -- out0 = in0*in1+in2
+	CONSTANT MULT_CONST	 : integer := 10;  -- out0 = in0 * dpureg0 , out1 = in2 * dpureg1
+	CONSTANT MAC		 : integer := 11;  -- out0 = (in0 * in1) + acc0  , out1 = (in2 * in3) + acc1
+	--CONSTANT MAC_NEG	 : integer := 12; -- out0 = (-in0 * in1) + acc0 , out1 = (-in2 * in3) + acc1
+	CONSTANT SOM_DIST	 : integer := 12; -- out0 = N/2-|in0-N/2|
+	CONSTANT MAC_CONST	 : integer := 13; -- out0 = (in0 * const) + acc0 , out1 = (in2 * const) + acc1
+	CONSTANT MAX_ACC	 : integer := 14; -- out0 = max(in0, acc0) , out1 = max(in1, acc1)
+	CONSTANT MAX_CONST	 : integer := 15; -- out0 = max(in0, const) , out1 = max(in1, const)
+	CONSTANT MIN_ACC	 : integer := 16; -- out0 = min(in0, acc0) , out1 = min(in1, acc1)
+	--CONSTANT MIN_CONST	 : integer := 17; -- out0 = min(in0, const) , out1 = min(in1, const)
+	CONSTANT MAX		 : integer := 17; -- out0 = max(in0, in1) , out1 = max(in2, in3)
+	CONSTANT SHIFT_L	 : integer := 18; -- out0 = in0 sla in1 , out1 = in2 sla in3
+	CONSTANT SHIFT_R	 : integer := 19; -- out0 = in0 sra in1 , out1 = in2 sra in3
+	CONSTANT SIGM		 : integer := 20; -- out0 = sigmoid(in0) , out1 = sigmoid(in1)
+	CONSTANT TANHYP		 : integer := 21; -- out0 = tanh(in0) , out1 = tanh(in1)
+	CONSTANT EXPON		 : integer := 22; -- out0 = exp(in0) , out1 = exp(in1) (if DIV_NUM = 2)
+	CONSTANT LK_RELU	 : integer := 23; -- out0 = max(const * in0, in0) , out1 = max(const * in1, in1) (const < 1)
+	CONSTANT ELU		 : integer := 24; -- out0 = in0 if in0 > 0, else a*(in1-1) , out1 = in2 if in2 > 0, else a*(in3-1)
+	CONSTANT DIV		 : integer := 25; -- out0 = in0/in1 , out1 = in0 % in1
+	CONSTANT ACC_SOFTMAX : integer := 26; -- (out0 & out1), (dpureg0 & dpureg1) = in0 + (dpureg0 & dpureg1) 
+	CONSTANT DIV_SOFTMAX : integer := 27; -- out0 = in0/(dpureg0 & dpureg1) , out1 = none
+	CONSTANT LD_REGS	 : integer := 28; -- dpureg0 = in0 , dpureg1 = in1
+	CONSTANT ST_REGS	 : integer := 29; -- out0 = dpureg0 , out1 = dpureg1
+	CONSTANT CHANGE_Q	 : integer := 30; -- q_reg = const
 
 	-- dpu output control modes select between right and left
 
@@ -867,9 +880,24 @@ PACKAGE top_consts_types_package IS
 	SUBTYPE dpu_in_type IS signed(DPU_IN_WIDTH - 1 DOWNTO 0);
 
 	--<DPU TYPES END>--
+	
+	--<REGISTER FILE CONSTANTS BEGIN>--
+	
+	CONSTANT REG_FILE_DEPTH     : integer := HW_REG_FILE_DEPTH;
+	CONSTANT MEM_BLOCK_SIZE    	: INTEGER := 16;
+	CONSTANT NUM_OF_REG_BLOCKS  : INTEGER := REG_FILE_DEPTH/MEM_BLOCK_SIZE;
+	CONSTANT RLE_WP				: INTEGER := 4;
+	
+	--<REGISTER FILE CONSTANTS END>--
+	
 	--<DiMArch Constants BEGIN>--
 	CONSTANT SRAM_SEQUENCER_INSTRUCTIONS : INTEGER := 16;
 	CONSTANT SRAM_DEPTH                  : INTEGER := HW_RAM_DEPTH;
+	CONSTANT SRAM_WIDTH                  : INTEGER := MEM_BLOCK_SIZE * BITWIDTH;
+	CONSTANT REG_ADDRESS_WIDTH           : INTEGER := log2(NUM_OF_REG_BLOCKS);
+	CONSTANT REG_FILE_MEM_ADDR_WIDTH     : natural := REG_ADDRESS_WIDTH;
+	CONSTANT REG_FILE_MEM_DATA_WIDTH     : natural := SRAM_WIDTH;
+	CONSTANT CONFIG_WIDTH                : natural := 40;
 	--<DiMArch Constants END>--
 
 	--<REFI CONSTANTS BEGIN>--
@@ -878,11 +906,9 @@ PACKAGE top_consts_types_package IS
 	CONSTANT REG_FILE_DATA_WIDTH     : integer := BITWIDTH;
 
 	CONSTANT REG_FILE_ADDR_WIDTH : integer := 6;
-	CONSTANT REG_FILE_DEPTH      : integer := HW_REG_FILE_DEPTH;
 
-	-- TODO: CHECK HERE: NR_REG_FILE_DATA_BLOCKS should be REG_FILE_DEPTH/16
-	CONSTANT WORDS_PER_BLOCK         : integer := 16;
-	CONSTANT NR_REG_FILE_DATA_BLOCKS : integer := REG_FILE_DEPTH/WORDS_PER_BLOCK; --to be made more parametric in the future
+	CONSTANT WORDS_PER_BLOCK         : integer := MEM_BLOCK_SIZE;
+	CONSTANT NR_REG_FILE_DATA_BLOCKS : integer := REG_FILE_DEPTH/WORDS_PER_BLOCK; 
 	CONSTANT INITIAL_DELAY_WIDTH     : integer := 4;
 	CONSTANT ADDR_COUNTER_WIDTH      : integer := 6;
 	CONSTANT START_ADDR_WIDTH        : integer := 6;
@@ -893,6 +919,10 @@ PACKAGE top_consts_types_package IS
 	CONSTANT ADDR_OFFSET_BIT         : integer := 21;
 	CONSTANT ADDR_COUNTER_BIT        : integer := 16;
 	CONSTANT PORT_NUMBER_WIDTH       : integer := 2;
+	
+	-- NEW CONSTANTS FOR REGISTER FILE AGU_block
+	CONSTANT START_ADDR_WIDTH_BLOCK         : integer := REG_FILE_MEM_ADDR_WIDTH;
+	CONSTANT ADDR_OFFSET_WIDTH_BLOCK        : integer := REG_FILE_MEM_ADDR_WIDTH;
 
 	--<REFI CONSTANTS END>--
 
@@ -905,7 +935,7 @@ PACKAGE top_consts_types_package IS
 	CONSTANT COLUMNS                 : natural := HW_COLUMNS;
 	CONSTANT ROWS                    : natural := HW_ROWS;
 	CONSTANT DiMArch_Rows            : natural := HW_DIMARCH_ROWS;
-	CONSTANT DiMArch_Row_Width       : natural := log2(DiMArch_Rows + 1) + 1;
+	CONSTANT DiMArch_Row_Width       : natural := log2(DiMArch_Rows + 1) + 1; -- Removed +1 outside log2 - Guido Baccelli 21/03/2019
 	CONSTANT NR_OF_HOPS              : natural := 2; --sliding window connectivity RANGE
 	CONSTANT MAX_NR_OF_OUTP_N_HOPS   : integer := 2*NR_OF_HOPS + 1; -- Max # outps in NR_OF_HOPS range
 	CONSTANT NR_OF_OUTP              : natural := 2; -- # of outp for Reg File/DPU - 2
@@ -921,19 +951,7 @@ PACKAGE top_consts_types_package IS
 	CONSTANT TRISTATE_SEL            : natural := 5;
 
 	--<COMPUTATIONAL FABRIC CONSTANTS END>--
-
-	--<MEMORY FABRIC CONSTANTS BEGIN>--
-	CONSTANT MEM_BLOCK_SIZE    : INTEGER := 16;
-	CONSTANT NUM_OF_REG_LOC    : INTEGER := REG_FILE_DEPTH/MEM_BLOCK_SIZE;
-	CONSTANT REG_ADDRESS_WIDTH : INTEGER := log2(NUM_OF_REG_LOC);
-	CONSTANT SRAM_WIDTH        : INTEGER := MEM_BLOCK_SIZE * BITWIDTH;
-
-	CONSTANT REG_FILE_MEM_ADDR_WIDTH : natural := REG_ADDRESS_WIDTH;
-	CONSTANT REG_FILE_MEM_DATA_WIDTH : natural := 256;
-	CONSTANT CONFIG_WIDTH            : natural := 40;
-
-	--<MEMORY FABRIC CONSTANTS END>--
-
+	
 	--<COMPUTATIONAL FABRIC TYPES BEGIN>--
 
 	--TYPE v_bus_ty_2d  IS ARRAY (natural RANGE <>) OF signed (BITWIDTH-1 DOWNTO 0);

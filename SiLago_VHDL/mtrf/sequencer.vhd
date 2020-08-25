@@ -1,6 +1,13 @@
 -------------------------------------------------------
---! @file
---! @brief Sequencer for the DRRA cell
+--! @file sequencer.vhd
+--! @brief UnitX
+--! @details 
+--! @author Sadiq Hemani
+--! @version 1.0
+--! @date 2013 08 14
+--! @bug NONE
+--! @todo NONE
+--! @copyright  GNU Public License [GPL-3.0].
 -------------------------------------------------------
 ---------------- Copyright (c) notice -----------------------------------------
 --
@@ -11,16 +18,16 @@
 -- Any authorised use, copy or distribution should carry this copyright notice
 -- unaltered.
 -------------------------------------------------------------------------------
--- Title      : silego DRRA cell
+-- Title      : UnitX
 -- Project    : SiLago
 -------------------------------------------------------------------------------
 -- File       : sequencer.vhd
 -- Author     : Sadiq Hemani
 -- Company    : KTH
--- Created    : 2013-08-14
--- Last update: 2019-03-11
--- Platform   : 
--- Standard   : VHDL'87
+-- Created    : 2013 08 14
+-- Last update: 2015 02 22
+-- Platform   : SiLago
+-- Standard   : VHDL'08
 -------------------------------------------------------------------------------
 -- Copyright (c) 2013
 -------------------------------------------------------------------------------
@@ -47,17 +54,15 @@
 --              Added swb instructions. (2013 10 10)
 -- Rev 4: Nasim Farahini. 2014 02 26.   
 -- Rev 5: Hassan Sohofi. 2015 02 22.
---              Adding branch instruction.      
--- Rev 6: Dimitrios Stathis. 2019 03 11
---				Update
--------------------------------------------------------------------------------------------
+--              Adding branch instruction.    
+-------------------------------------------------------------------------------
 
 --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 --                                                                         #
 --This file is part of SiLago.                                             #
 --                                                                         #
 --    SiLago platform source code is distributed freely: you can           #
---    redistribute it and/or modify it under the terms of the GNU    	   #
+--    redistribute it and/or modify it under the terms of the GNU          #
 --    General Public License as published by the Free Software Foundation, #
 --    either version 3 of the License, or (at your option) any             #
 --    later version.                                                       #
@@ -72,32 +77,18 @@
 --                                                                         #
 --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
---! IEEE Library
-library ieee;
---! Use standard library
-use ieee.std_logic_1164.all;
---! Use numeric library for signed and unsigned arithmetics
-use ieee.numeric_std.all;
---! Use the unsigned library (treat all std_vectors as unsigned numers)
-use ieee.std_logic_unsigned.all; -- @TODO remove the unsigned library, only the numeric_std should be used
---! Use the top constant package that includes all the constants and type definitions
-use work.top_consts_types_package.all;
---! Use the sequencer funcion package, includes all the unpacking functions for the sequencer
-use work.seq_functions_package.all;
---! Use the utility package
-use work.util_package.all;
---! Use the noc package from the DiMArch that includes all the type definitions and constants
-use work.noc_types_n_constants.all;
---change for git
 --instr_ld is deasserted at the same time as the last instruction is being sent
 --from the tb
 
---! @breif This is the sequencer for the core DRRA cell
---! @detail The sequencer is the control unit of the DRRA cell, it is a reconfigurable 
---! FSM that configures the DPU, AGU and SWB. The instructions are loaded from the TestBench (TB) or
---! the network interface (NI) unit. To load the instruction the correct address should be given to the 
---! seq_address* signals, also the instr_ld should be active. The instr_ld should be deasserted 
---! at the same time as the last instruction is being sent from the TB/NI.
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+use ieee.std_logic_unsigned.all;
+use work.top_consts_types_package.all;
+use work.seq_functions_package.all;
+use work.util_package.all;
+use work.noc_types_n_constants.all;
+
 entity sequencer is
 	generic(
 		-- ADDRESS : natural RANGE 0 TO 4*COLUMNS;
@@ -135,6 +126,7 @@ entity sequencer is
 		reg_rpt_step_value : out std_logic_vector(REP_STEP_VALUE_PORT_SIZE - 1 downto 0);
 --		reg_dimarch_mode   : out std_logic_vector(NR_OF_REG_FILE_PORTS_VECTOR_SIZE-1 downto 0);
 		reg_dimarch_mode   : out std_logic;
+		reg_use_compr	   : out std_logic;
 		instr_start        : out std_logic;
 
 		reg_rpt_delay      : out std_logic_vector(REPT_DELAY_VECTOR_SIZE - 1 downto 0);
@@ -156,10 +148,6 @@ entity sequencer is
 
 end;
 
---! @brief Architecture of the Sequnecer
---! @detail The sequencer contains an instruction register file, loaded by either the TestBench or the Network Interface.
---! The instructions are used to configure the AGUs, SWB, DPU and build the path to the DiMArch as well as configure 
---! the AGUs in the DiMArch.
 architecture behv of sequencer is
 	signal seq_address_match : std_logic; -- is asserted when the address from the bus matches the address of the sequencer.
 	signal new_instr_ld      : std_logic; -- flags that a new instruction is ready
@@ -204,7 +192,8 @@ architecture behv of sequencer is
 	signal reg_middle_delay_tmp   : std_logic_vector(REG_FILE_MIDDLE_DELAY_PORT_SIZE - 1 downto 0);
 	signal reg_no_of_rpts_tmp     : std_logic_vector(NUM_OF_REPT_PORT_SIZE - 1 downto 0);
 	signal reg_rpt_step_value_tmp : std_logic_vector(REP_STEP_VALUE_PORT_SIZE - 1 downto 0);
-	signal reg_dimarch_mode_tmp : std_logic;
+	signal reg_dimarch_mode_tmp   : std_logic;
+	signal reg_use_compr_tmp	  : std_logic;
 --	signal reg_dimarch_mode_tmp : std_logic_vector(NR_OF_REG_FILE_PORTS_VECTOR_SIZE-1 downto 0);
 
 	--signal  del_cycles_tmp: std_logic_vector(DLY_CYCLES_VECTOR_SIZE DOWNTO 0);
@@ -479,8 +468,9 @@ begin                                   -- architecture behv
 			reg_fft_stage      <= (others => '0');
 			reg_end_fft_stage  <= (others => '0');
 			instr_start        <= '0';
-			reg_dimarch_mode   <='0';
+			reg_dimarch_mode   <= '0';
 --			reg_dimarch_mode   <= (others => '0');
+			reg_use_compr	   <= '0';
 
 		elsif clk'event and clk = '1' then -- rising clock edge
 
@@ -500,8 +490,8 @@ begin                                   -- architecture behv
 				reg_middle_delay   <= reg_middle_delay_tmp;
 				reg_no_of_rpts     <= reg_no_of_rpts_tmp;
 				reg_rpt_step_value <= reg_rpt_step_value_tmp;
-				reg_dimarch_mode <= reg_dimarch_mode_tmp;
-				
+				reg_dimarch_mode   <= reg_dimarch_mode_tmp;
+				reg_use_compr	   <= reg_use_compr_tmp;	
 
 			else
 				instr_start <= '0';
@@ -570,6 +560,7 @@ begin                                   -- architecture behv
 		reg_rpt_step_value_tmp <= (others => '0');
 --		reg_dimarch_mode_tmp   <= (others => '0');
 		reg_dimarch_mode_tmp   <= '0';
+		reg_use_compr_tmp	   <= '0';
 		config_count_en        <= '0';
 		loop_jump_mode         <= '0';
 		pc_count_en            <= '0';
@@ -621,7 +612,7 @@ begin                                   -- architecture behv
 
 				end if;
 
-			when INSTR_DECODE_ST =>
+			when INSTR_DECODE_ST => 
 				config_count_en <= '0';
 
 				if no_more_instr = '1' then
@@ -730,7 +721,8 @@ begin                                   -- architecture behv
 								reg_middle_delay_tmp   <= unpack_refi3_record(instr_refi3).refi_middle_delay_ext & unpack_refi2_record(instr_refi2).refi_middle_delay;
 								reg_no_of_rpts_tmp     <= unpack_refi3_record(instr_refi3).no_of_rpt_ext & unpack_refi2_record(instr_refi2).no_of_reps;
 								reg_rpt_step_value_tmp <= unpack_refi3_record(instr_refi3).rpt_step_value_ext & unpack_refi2_record(instr_refi2).rpt_step_value;
-								reg_dimarch_mode_tmp  <= unpack_refi3_record(instr_refi3).dimarch_mode;
+								reg_dimarch_mode_tmp   <= unpack_refi3_record(instr_refi3).dimarch_mode;
+								reg_use_compr_tmp 	   <= unpack_refi3_record(instr_refi3).use_compr;
 --								if unpack_refi3_record(instr_refi3).dimarch_mode = '1' then
 --									reg_dimarch_mode_tmp <= unpack_refi1_record(instr).reg_file_port;
 --								else
@@ -901,7 +893,9 @@ begin                                   -- architecture behv
 						if sram_instruction.sram_Loop1_iteration_sd = '1' then  -- Loop 1 iteration  Static or Dynamic
 							if sr_loop1_iteration_width > RACCU_REG_ADDRS_WIDTH then
 								sram_instruction.Loop1_iteration(RACCU_REG_BITWIDTH-1 downto 0) := raccu_reg_out(CONV_INTEGER(sram_instruction.Loop1_iteration(RACCU_REG_ADDRS_WIDTH-1 downto 0)));
-								sram_instruction.Loop1_iteration(sr_loop1_iteration_width-1 downto RACCU_REG_BITWIDTH) := (others => '0'); -- unsgined sign extention
+								sram_instruction.Loop1_iteration(sr_loop1_iteration_width-1 downto RACCU_REG_ADDRS_WIDTH) := (others => '0'); -- unsgined sign extention
+								-- ORIGINAL LINE:	
+								--sram_instruction.Loop1_iteration(sr_loop1_iteration_width-1 downto RACCU_REG_BITWIDTH) := (others => '0'); -- unsgined sign extention
 							else    --  When RACCU is bigger then iteration  just un comment following lines 
 								assert false report "RACCU Width is bigger then loop1 interations uncomment the lines below this assert statement to make the design work" severity error;
 								--	sram_instruction.Loop1_iteration(sr_loop1_iteration_width-1 downto 0) :="0"&raccu_reg_out(CONV_INTEGER(sram_instruction.Loop1_iteration(RACCU_REG_ADDRS_WIDTH-1 downto 0)));
@@ -940,7 +934,9 @@ begin                                   -- architecture behv
 						end if;
 						
 						if sram_instruction.sram_Loop2_increment_sd = '1' then -- Loop 1 increment  Static or Dynamic
-							sram_instruction.Loop2_Increment := raccu_reg_out(CONV_INTEGER(sram_instruction.Loop2_Increment(RACCU_REG_ADDRS_WIDTH-1 downto 0)));
+							sram_instruction.Loop2_Increment := '0' & raccu_reg_out(CONV_INTEGER(sram_instruction.Loop2_Increment(RACCU_REG_ADDRS_WIDTH-1 downto 0)));
+							--ORIGINAL LINE: 
+							--sram_instruction.Loop2_Increment := raccu_reg_out(CONV_INTEGER(sram_instruction.Loop2_Increment(RACCU_REG_ADDRS_WIDTH-1 downto 0)));
 							if sram_instruction.Loop2_Increment(RACCU_REG_ADDRS_WIDTH-1) = '1' then -- sign extentions 
 								sram_instruction.Loop2_Increment(sr_loop2_increment_width-1 downto RACCU_REG_ADDRS_WIDTH) := (others => '1');
 							else 

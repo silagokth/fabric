@@ -1,12 +1,10 @@
 -------------------------------------------------------
---! @file hw_setting.vhd
---! @brief General HW settings 
---! @details This file contains the HW configuration. To change the configuration of the
---! fabric alter this file accordingly. !!! N.B. !!! The current version might need changes
---! in other files as well.
+--! @file data_selector.vhd
+--! @brief This module is used to select the access to the dimarch data bus
+--! @details 
 --! @author Dimitrios Stathis
 --! @version 1.0
---! @date 2020-01-24
+--! @date 15/01/2018
 --! @bug NONE
 --! @todo NONE
 --! @copyright  GNU Public License [GPL-3.0].
@@ -20,24 +18,23 @@
 -- Any authorised use, copy or distribution should carry this copyright notice
 -- unaltered.
 -------------------------------------------------------------------------------
--- Title      : UnitX
+-- Title      : 
 -- Project    : SiLago
 -------------------------------------------------------------------------------
--- File       : hw_setting.vhd
+-- File       : data_selector.vhd
 -- Author     : Dimitrios Stathis
 -- Company    : KTH
--- Created    : 2020-01-24
--- Last update: 2020-01-24
+-- Created    : 15/01/2018
+-- Last update: 15/01/2018
 -- Platform   : SiLago
 -- Standard   : VHDL'08
 -------------------------------------------------------------------------------
--- Copyright (c) 2020
+-- Copyright (c) 2018
 -------------------------------------------------------------------------------
 -- Contact    : Dimitrios Stathis <stathis@kth.se>
 -------------------------------------------------------------------------------
 -- Revisions  :
 -- Date        Version  Author                  Description
--- 2020-01-24  1.0      Dimitrios Stathis      Created
 -------------------------------------------------------------------------------
 
 --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -59,27 +56,41 @@
 --    along with SiLago.  If not, see <https://www.gnu.org/licenses/>.     #
 --                                                                         #
 --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+--! Standard ieee library
+LIBRARY ieee;
+--! Standard logic library
+USE ieee.std_logic_1164.ALL;
+--! Standard numeric library for signed and unsigned
+USE ieee.numeric_std.ALL;
+USE work.noc_types_n_constants.DATA_IO_SIGNAL_TYPE;
+USE work.top_consts_types_package.SRAM_WIDTH;
+USE work.noc_types_n_constants.zero_block;
 
-PACKAGE hw_setting IS
+--! This module is used to select the access to the dimarch data bus
 
-    CONSTANT HW_INSTR_DEPTH           : NATURAL := 64;
-    CONSTANT HW_RAM_DEPTH             : NATURAL := 128;
-    CONSTANT HW_REG_FILE_DEPTH        : NATURAL := 64;
-    CONSTANT HW_COLUMNS               : NATURAL := 8;
-    CONSTANT HW_ROWS                  : NATURAL := 2;
-    CONSTANT HW_DIMARCH_ROWS          : NATURAL := 1;
-    CONSTANT HW_RACCU_REGFILE_DEPTH   : NATURAL := 8;
-    CONSTANT HW_MAX_NO_OF_RACCU_LOOPS : NATURAL := 4;
-    CONSTANT HW_DPU_CONSTANT_WIDTH    : NATURAL := 8;
+--! We use this module to select which of the 2 DRRA rows will have
+--! access to the data bus that connects with the bottom line of the DiMArch
+ENTITY data_selector IS
 
-END PACKAGE hw_setting;
+    PORT
+    (
+        data_in_this                 : IN STD_LOGIC_VECTOR(SRAM_WIDTH - 1 DOWNTO 0);  --! data from this 
+        data_in_next                 : IN STD_LOGIC_VECTOR(SRAM_WIDTH - 1 DOWNTO 0);  --! data from other row
+        data_out                     : OUT STD_LOGIC_VECTOR(SRAM_WIDTH - 1 DOWNTO 0); --! data out
+        dimarch_silego_rd_2_out_this : IN std_logic;                                  --! ready signal from this cell
+        dimarch_silego_rd_out_next   : IN std_logic                                   --! ready signal from the other row
+    );
+END ENTITY data_selector;
 
--- Some fixed parameters:
---  * BITWIDTH = 16
---  * RACCU maximum iteration is 64 (It is dependent to the RACCU operand width).
---  * RACCU_REG_BITWIDTH = 6
---  * ...
+--! @brief Simple structural architecture for address assignment.
+--! @details This is a simple multiplexer that decides the connection to the data bus
+ARCHITECTURE RTL OF data_selector IS
+BEGIN
 
--- Note:
---   If there is a need for bigger register file then register_file.vhd and also
---   STARTING_ADDRS and NR_OF_ADDRS in top_consts package should be modified.
+    data_out <= data_in_this WHEN (dimarch_silego_rd_2_out_this = '1')
+        ELSE
+        data_in_next WHEN (dimarch_silego_rd_out_next = '1')
+        ELSE
+        zero_block;
+
+END ARCHITECTURE RTL;

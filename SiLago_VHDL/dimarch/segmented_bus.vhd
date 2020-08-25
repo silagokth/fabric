@@ -1,18 +1,69 @@
+-------------------------------------------------------
+--! @file segmented_bus.vhd
+--! @brief 
+--! @details 
+--! @author Muhammad Adeel Tajammul
+--! @version 1.0
+--! @date 
+--! @bug NONE
+--! @todo NONE
+--! @copyright  GNU Public License [GPL-3.0].
+-------------------------------------------------------
 ---------------- Copyright (c) notice -----------------------------------------
 --
 -- The VHDL code, the logic and concepts described in this file constitute
 -- the intellectual property of the authors listed below, who are affiliated
--- to KTH(Kungliga Tekniska Hogskolan), School of ICT, Kista.
+-- to KTH(Kungliga Tekniska Högskolan), School of ICT, Kista.
 -- Any unauthorised use, copy or distribution is strictly prohibited.
 -- Any authorised use, copy or distribution should carry this copyright notice
 -- unaltered.
+-------------------------------------------------------------------------------
+-- Title      : 
+-- Project    : SiLago
+-------------------------------------------------------------------------------
+-- File       : segmented_bus.vhd
+-- Author     : Muhammad Adeel Tajammul
+-- Company    : KTH
+-- Created    : 
+-- Last update: 
+-- Platform   : SiLago
+-- Standard   : VHDL'08
+-------------------------------------------------------------------------------
+-- Copyright (c) 2014
+-------------------------------------------------------------------------------
+-- Contact    : Dimitrios Stathis <stathis@kth.se>
+-------------------------------------------------------------------------------
+-- Revisions  :
+-- Date        Version  Author                  Description
+--             1.0      Muhammad Adeel Tajammul      Created
+-------------------------------------------------------------------------------
+
+--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+--                                                                         #
+--This file is part of SiLago.                                             #
+--                                                                         #
+--    SiLago platform source code is distributed freely: you can           #
+--    redistribute it and/or modify it under the terms of the GNU          #
+--    General Public License as published by the Free Software Foundation, #
+--    either version 3 of the License, or (at your option) any             #
+--    later version.                                                       #
+--                                                                         #
+--    SiLago is distributed in the hope that it will be useful,            #
+--    but WITHOUT ANY WARRANTY; without even the implied warranty of       #
+--    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        #
+--    GNU General Public License for more details.                         #
+--                                                                         #
+--    You should have received a copy of the GNU General Public License    #
+--    along with SiLago.  If not, see <https://www.gnu.org/licenses/>.     #
+--                                                                         #
+--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+---------------- Copyright (c) notice -----------------------------------------
 -- This is a segment of bus that implements without  
 -- instruction value 2 means right to left
 -- instruction value 1 means left to right
 -- instruction value 0 means break
 -- instruction value 3 not used
---- Authors: Muhammad Adeel Tajammul: PhD student, ES, School of ICT, KTH, Kista.
--- Contact: tajammul@kth.se
 -----------------------------------------------------------------------------------
 --   DIAGRAM
 -----------------------------------------------------------------------------------
@@ -77,70 +128,71 @@
 --
 --
 ---------------------------------------------------------------------------------
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-use work.noc_types_n_constants.all;
-entity segmented_bus is
-	port(
-		clk               : in  std_logic;
-		rst               : in  std_logic;
-		left_instruction  : in  PARTITION_INSTRUCTION_RECORD_TYPE;
-		right_instruction : in  PARTITION_INSTRUCTION_RECORD_TYPE;
-		left_in           : in  NOC_BUS_TYPE;
-		right_in          : in  NOC_BUS_TYPE;
-		left_out          : out NOC_BUS_TYPE;
-		right_out         : out NOC_BUS_TYPE;
-		bus_direction     : out std_logic_vector(1 DOWNTO 0)
-	);
-end entity segmented_bus;
+LIBRARY ieee;
+USE ieee.std_logic_1164.ALL;
+USE ieee.numeric_std.ALL;
+USE work.noc_types_n_constants.ALL;
+ENTITY segmented_bus IS
+    PORT
+    (
+        clk               : IN std_logic;
+        rst               : IN std_logic;
+        left_instruction  : IN PARTITION_INSTRUCTION_RECORD_TYPE;
+        right_instruction : IN PARTITION_INSTRUCTION_RECORD_TYPE;
+        left_in           : IN NOC_BUS_TYPE;
+        right_in          : IN NOC_BUS_TYPE;
+        left_out          : OUT NOC_BUS_TYPE;
+        right_out         : OUT NOC_BUS_TYPE;
+        bus_direction     : OUT std_logic_vector(1 DOWNTO 0)
+    );
+END ENTITY segmented_bus;
 
-architecture RTL of segmented_bus is
-	signal direction : std_logic_vector(1 DOWNTO 0);
-begin
-	p_segment : process(clk, rst) is
-	begin
-		if rst = '0' then
-			--			left_out  <= IDLE_BUS;
-			--			right_out  <= IDLE_BUS;
-			direction <= (others => '0');
-		elsif rising_edge(clk) then
-			if left_instruction.ENABLE = '1' then
-				if left_instruction.PARTITION = "10" then
-					direction <= left_instruction.PARTITION;
-				elsif left_instruction.PARTITION = "01" then
-					direction <= left_instruction.PARTITION;
-				else                    -- invalid instruction
-					assert false report "invalid partitioning" severity error;
-				end if;
-			elsif right_instruction.ENABLE = '1' then
-				if right_instruction.PARTITION = "10" then
-					direction <= right_instruction.PARTITION;
-				elsif right_instruction.PARTITION = "01" then
-					direction <= right_instruction.PARTITION;
-				else                    -- invalid instruction
-					assert false report "invalid partitioning" severity error;
-				end if;
-			end if;
-		end if;
-	end process p_segment;
+ARCHITECTURE RTL OF segmented_bus IS
+    SIGNAL direction : std_logic_vector(1 DOWNTO 0);
+BEGIN
+    p_segment : PROCESS (clk, rst) IS
+    BEGIN
+        IF rst = '0' THEN
+            --			left_out  <= IDLE_BUS;
+            --			right_out  <= IDLE_BUS;
+            direction <= (OTHERS => '0');
+        ELSIF rising_edge(clk) THEN
+            IF left_instruction.ENABLE = '1' THEN
+                IF left_instruction.PARTITION = "10" THEN
+                    direction <= left_instruction.PARTITION;
+                ELSIF left_instruction.PARTITION = "01" THEN
+                    direction <= left_instruction.PARTITION;
+                ELSE -- invalid instruction
+                    ASSERT false REPORT "invalid partitioning" SEVERITY error;
+                END IF;
+            ELSIF right_instruction.ENABLE = '1' THEN
+                IF right_instruction.PARTITION = "10" THEN
+                    direction <= right_instruction.PARTITION;
+                ELSIF right_instruction.PARTITION = "01" THEN
+                    direction <= right_instruction.PARTITION;
+                ELSE -- invalid instruction
+                    ASSERT false REPORT "invalid partitioning" SEVERITY error;
+                END IF;
+            END IF;
+        END IF;
+    END PROCESS p_segment;
 
-	p_direction : process(left_in, right_in, direction) is
-	begin
-		case direction is
-			when "10" =>
-				left_out  <= IDLE_BUS;
-				right_out <= left_in;
-			when "01" =>
-				left_out  <= right_in;
-				right_out <= IDLE_BUS;
-			when others =>
-				left_out  <= IDLE_BUS;
-				right_out <= IDLE_BUS;
-		end case;
+    p_direction : PROCESS (left_in, right_in, direction) IS
+    BEGIN
+        CASE direction IS
+            WHEN "10" =>
+                left_out  <= IDLE_BUS;
+                right_out <= left_in;
+            WHEN "01" =>
+                left_out  <= right_in;
+                right_out <= IDLE_BUS;
+            WHEN OTHERS =>
+                left_out  <= IDLE_BUS;
+                right_out <= IDLE_BUS;
+        END CASE;
 
-	end process p_direction;
+    END PROCESS p_direction;
 
-	bus_direction <= direction;
+    bus_direction <= direction;
 
-end architecture RTL;
+END ARCHITECTURE RTL;

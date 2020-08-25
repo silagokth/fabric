@@ -1,6 +1,6 @@
 -------------------------------------------------------
---! @file AGU.vhd
---! @brief AGU 
+--! @file AGU_RFblock.vhd
+--! @brief AGU register file block
 --! @details 
 --! @author Nasim Farahini
 --! @version 2.0
@@ -18,10 +18,10 @@
 -- Any authorised use, copy or distribution should carry this copyright notice
 -- unaltered.
 -------------------------------------------------------------------------------
--- Title      : AGU 
+-- Title      : AGU register file block
 -- Project    : SiLago
 -------------------------------------------------------------------------------
--- File       : AGU.vhd
+-- File       : AGU_RFblock.vhd
 -- Author     : Nasim Farahini
 -- Company    : KTH
 -- Created    : 2013-09-10
@@ -58,14 +58,14 @@
 --    along with SiLago.  If not, see <https://www.gnu.org/licenses/>.     #
 --                                                                         #
 --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
---~
+
 LIBRARY ieee, work;
 USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL;
 USE ieee.std_logic_unsigned.ALL;
 USE work.top_consts_types_package.ALL;
 
-ENTITY AGU IS
+ENTITY AGU_RFblock IS
 
     PORT
     (
@@ -81,13 +81,13 @@ ENTITY AGU IS
         instr_no_of_rpts     : IN std_logic_vector(NUM_OF_REPT_PORT_SIZE - 1 DOWNTO 0);
         instr_rpt_step_value : IN std_logic_vector(REP_STEP_VALUE_PORT_SIZE - 1 DOWNTO 0);
         instr_rpt_delay      : IN std_logic_vector(REPT_DELAY_VECTOR_SIZE - 1 DOWNTO 0);
-        addr_out             : OUT std_logic_vector(REG_FILE_ADDR_WIDTH - 1 DOWNTO 0);
+        addr_out             : OUT std_logic_vector(REG_FILE_MEM_ADDR_WIDTH - 1 DOWNTO 0); -- changed from REG_FILE_ADDR_WIDTH
         addr_en              : OUT std_logic
     );
 
-END AGU;
+END AGU_RFblock;
 
-ARCHITECTURE behave OF AGU IS
+ARCHITECTURE behave OF AGU_RFblock IS
 
     TYPE state_type IS (IDLE_ST, INITIAL_DELAY_ST, LINEAR_ST, RPT_DELAY_ST, RPT_ST);
 
@@ -96,20 +96,33 @@ ARCHITECTURE behave OF AGU IS
     SIGNAL addr_counter                                                                                                                                    : std_logic_vector(ADDR_COUNTER_WIDTH - 1 DOWNTO 0);
     SIGNAL one_addr, delay_count_en, addr_count_en, addr_value_en, init_zero, all_done_temp, no_more_rpt, add_sub_addr_en                                  : std_logic;
     SIGNAL rpt_no_count_en, rpt_start_addrs_en, rpt_delay_count_en, middle_delay_flag, middle_delay_first_cycle, middle_delay_count_en, addr_count_halt_en : std_logic;
-    SIGNAL step_val_reg, step_val_temp_in                                                                                                                  : std_logic_vector(ADDR_OFFSET_WIDTH - 1 DOWNTO 0);
+    SIGNAL step_val_reg, step_val_temp_in                                                                                                                  : std_logic_vector(ADDR_OFFSET_WIDTH_BLOCK - 1 DOWNTO 0); -- changed from ADDR_OFFSET_WIDTH
     SIGNAL no_of_addrs_reg                                                                                                                                 : std_logic_vector(ADDR_COUNTER_WIDTH - 1 DOWNTO 0);
-    SIGNAL start_addrs_reg, rpt_start_addrs_reg_in, rpt_start_addrs_reg                                                                                    : std_logic_vector(START_ADDR_WIDTH - 1 DOWNTO 0);
+    SIGNAL start_addrs_reg, rpt_start_addrs_reg_in, rpt_start_addrs_reg                                                                                    : std_logic_vector(START_ADDR_WIDTH_BLOCK - 1 DOWNTO 0); -- changed from START_ADDR_WIDTH
     SIGNAL initial_delay_reg                                                                                                                               : std_logic_vector(INITIAL_DELAY_WIDTH - 1 DOWNTO 0);
     SIGNAL rpt_no_counter                                                                                                                                  : std_logic_vector(5 DOWNTO 0);
     SIGNAL middle_delay_reg, middle_delay_counter                                                                                                          : std_logic_vector(REG_FILE_MIDDLE_DELAY_PORT_SIZE - 1 DOWNTO 0);
     SIGNAL no_of_rpts_reg                                                                                                                                  : std_logic_vector(NUM_OF_REPT_PORT_SIZE - 1 DOWNTO 0);
-    SIGNAL rpt_step_value_reg                                                                                                                              : std_logic_vector(REP_STEP_VALUE_PORT_SIZE - 1 DOWNTO 0);
+    SIGNAL rpt_step_value_reg                                                                                                                              : std_logic_vector(ADDR_OFFSET_WIDTH_BLOCK - 1 DOWNTO 0); -- changed from REP_STEP_VALUE_PORT_SIZE
     SIGNAL rpt_delay_reg, rpt_delay_counter                                                                                                                : std_logic_vector(REPT_DELAY_VECTOR_SIZE - 1 DOWNTO 0);
     SIGNAL step_val_sign_reg, add_sub_addr                                                                                                                 : std_logic_vector(ADDR_OFFSET_SIGN_WIDTH - 1 DOWNTO 0);
-    SIGNAL addr_temp_in, addr_temp_out                                                                                                                     : std_logic_vector(REG_FILE_ADDR_WIDTH - 1 DOWNTO 0);
+    SIGNAL addr_temp_in, addr_temp_out                                                                                                                     : std_logic_vector(REG_FILE_MEM_ADDR_WIDTH - 1 DOWNTO 0); -- changed from REG_FILE_ADDR_WIDTH 
+
+    ---------------- Definition of instruction fields with new address base -----------------------
+    SIGNAL instr_start_addrs_block    : std_logic_vector(START_ADDR_WIDTH_BLOCK - 1 DOWNTO 0);
+    SIGNAL instr_step_val_block       : std_logic_vector(ADDR_OFFSET_WIDTH_BLOCK - 1 DOWNTO 0);
+    SIGNAL instr_rpt_step_value_block : std_logic_vector(ADDR_OFFSET_WIDTH_BLOCK - 1 DOWNTO 0);
+    -----------------------------------------------------------------------------------------------
 
 BEGIN
 
+    ---------------- Input instruction fields with new address base -----------------------
+
+    instr_start_addrs_block    <= instr_start_addrs(START_ADDR_WIDTH_BLOCK - 1 DOWNTO 0);
+    instr_step_val_block       <= instr_step_val(ADDR_OFFSET_WIDTH_BLOCK - 1 DOWNTO 0);
+    instr_rpt_step_value_block <= instr_rpt_step_value(ADDR_OFFSET_WIDTH_BLOCK - 1 DOWNTO 0);
+
+    ---------------------------------------------------------------------------------------
     one_addr <= '1' WHEN instr_no_of_addrs = "000000" ELSE
         '0';
     init_zero <= '1' WHEN (instr_start = '1' AND instr_initial_delay = "0000") ELSE
@@ -139,14 +152,14 @@ BEGIN
             rpt_delay_reg      <= (OTHERS => '0');
         ELSIF clk'event AND clk = '1' THEN
             IF instr_start = '1' THEN
-                step_val_reg       <= instr_step_val;
+                step_val_reg       <= instr_step_val_block;
                 step_val_sign_reg  <= instr_step_val_sign;
                 no_of_addrs_reg    <= instr_no_of_addrs;
-                start_addrs_reg    <= instr_start_addrs;
+                start_addrs_reg    <= instr_start_addrs_block;
                 initial_delay_reg  <= instr_initial_delay;
                 middle_delay_reg   <= instr_middle_delay;
                 no_of_rpts_reg     <= instr_no_of_rpts;
-                rpt_step_value_reg <= instr_rpt_step_value;
+                rpt_step_value_reg <= instr_rpt_step_value_block;
                 rpt_delay_reg      <= instr_rpt_delay;
             ELSIF all_done_temp = '1' THEN
                 step_val_reg       <= (OTHERS => '0');
@@ -250,10 +263,10 @@ BEGIN
         END IF;
     END PROCESS addr_value;
 
-    AGU_FSM : PROCESS (pres_state, middle_delay_flag, middle_delay_first_cycle, rpt_start_addrs_en, no_more_rpt, rpt_no_count_en, instr_step_val, instr_start_addrs,
+    AGU_FSM : PROCESS (pres_state, middle_delay_flag, middle_delay_first_cycle, rpt_start_addrs_en, no_more_rpt, rpt_no_count_en, instr_step_val_block, instr_start_addrs_block,
         instr_no_of_addrs, instr_start, instr_initial_delay, one_addr, addr_counter, start_addrs_reg,
         initial_delay_reg, delay_counter, addr_temp_out, step_val_sign_reg, no_of_addrs_reg, rpt_delay_reg, rpt_delay_counter, instr_middle_delay, instr_no_of_rpts,
-        instr_step_val_sign, instr_rpt_delay, step_val_reg, instr_rpt_step_value, no_of_rpts_reg, rpt_step_value_reg, rpt_start_addrs_reg)
+        instr_step_val_sign, instr_rpt_delay, step_val_reg, instr_rpt_step_value_block, no_of_rpts_reg, rpt_step_value_reg, rpt_start_addrs_reg)
     BEGIN
         next_state            <= pres_state;
         addr_count_en         <= '0';
@@ -279,17 +292,17 @@ BEGIN
                 IF instr_start = '1' THEN
                     IF instr_initial_delay = "0000" THEN
                         IF instr_middle_delay = "000000" THEN
-                            step_val_temp_in <= instr_step_val;
+                            step_val_temp_in <= instr_step_val_block;
                             add_sub_addr     <= instr_step_val_sign;
                             IF one_addr = '1' THEN
                                 IF instr_no_of_rpts = "000000" THEN
                                     next_state    <= IDLE_ST;
                                     addr_en       <= '1';
                                     all_done_temp <= '1';
-                                    addr_out      <= instr_start_addrs;
+                                    addr_out      <= instr_start_addrs_block;
                                 ELSE
                                     IF instr_rpt_delay = "000000" THEN
-                                        addr_temp_in       <= instr_start_addrs;
+                                        addr_temp_in       <= instr_start_addrs_block;
                                         add_sub_addr       <= (OTHERS => '0');
                                         rpt_no_count_en    <= '1';
                                         rpt_start_addrs_en <= '1';
@@ -297,8 +310,8 @@ BEGIN
                                         addr_count_en      <= '0';
                                         addr_value_en      <= '1';
                                         next_state         <= LINEAR_ST;
-                                        addr_out           <= instr_start_addrs;
-                                        step_val_temp_in   <= instr_rpt_step_value;
+                                        addr_out           <= instr_start_addrs_block;
+                                        step_val_temp_in   <= instr_rpt_step_value_block;
                                     ELSE
                                         next_state         <= RPT_DELAY_ST;
                                         rpt_no_count_en    <= '1';
@@ -309,17 +322,17 @@ BEGIN
                                         add_sub_addr       <= (OTHERS => '0');
                                         addr_count_en      <= '1';
                                         addr_en            <= '1';
-                                        addr_temp_in       <= instr_start_addrs;
-                                        addr_out           <= instr_start_addrs;
+                                        addr_temp_in       <= instr_start_addrs_block;
+                                        addr_out           <= instr_start_addrs_block;
                                     END IF;
                                 END IF;
                             ELSE
-                                addr_temp_in  <= instr_start_addrs;
+                                addr_temp_in  <= instr_start_addrs_block;
                                 addr_en       <= '1';
                                 addr_count_en <= '1';
                                 addr_value_en <= '1';
                                 next_state    <= LINEAR_ST;
-                                addr_out      <= instr_start_addrs;
+                                addr_out      <= instr_start_addrs_block;
                                 add_sub_addr  <= instr_step_val_sign;
                             END IF;
                         ELSE
@@ -327,18 +340,18 @@ BEGIN
                             addr_count_halt_en    <= '1';
                             step_val_temp_in      <= (OTHERS => '0');
                             add_sub_addr          <= (OTHERS => '0');
-                            addr_temp_in          <= instr_start_addrs;
+                            addr_temp_in          <= instr_start_addrs_block;
                             addr_en               <= '1';
                             addr_count_en         <= '1';
                             addr_value_en         <= '1';
                             next_state            <= LINEAR_ST;
-                            addr_out              <= instr_start_addrs;
+                            addr_out              <= instr_start_addrs_block;
                         END IF;
                     ELSE
                         IF instr_initial_delay = "0001" THEN
                             step_val_temp_in <= (OTHERS => '0');
                             add_sub_addr     <= (OTHERS => '0');
-                            addr_temp_in     <= instr_start_addrs;
+                            addr_temp_in     <= instr_start_addrs_block;
                             addr_en          <= '0';
                             addr_count_en    <= '0';
                             addr_value_en    <= '1';
@@ -444,6 +457,7 @@ BEGIN
                 addr_out       <= rpt_start_addrs_reg;
                 next_state     <= LINEAR_ST;
                 addr_temp_in   <= rpt_start_addrs_reg;
+
                 IF middle_delay_first_cycle = '0' THEN --Remove this condition if you need adr_en=1 during the middle_delay
                     addr_en <= '1';
                 ELSE

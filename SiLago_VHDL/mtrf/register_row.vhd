@@ -1,6 +1,13 @@
 -------------------------------------------------------
---! @file
---! @brief Register row
+--! @file register_row.vhd
+--! @brief 
+--! @details 
+--! @author sadiq
+--! @version 1.0
+--! @date 2013-10-06
+--! @bug NONE
+--! @todo NONE
+--! @copyright  GNU Public License [GPL-3.0].
 -------------------------------------------------------
 ---------------- Copyright (c) notice -----------------------------------------
 --
@@ -11,26 +18,24 @@
 -- Any authorised use, copy or distribution should carry this copyright notice
 -- unaltered.
 -------------------------------------------------------------------------------
--- Title      : Register Row
+-- Title      : 
 -- Project    : SiLago
 -------------------------------------------------------------------------------
--- File        : register_row.vhd
--- Author      : sadiq  <sadiq@drrasystem>
--- Company     : 
--- Created     : 2013-07-19
--- Last update : 2013-10-06
--- Platform    : 
--- Standard    : VHDL'87
+-- File       : register_row.vhd
+-- Author     : sadiq
+-- Company    : KTH
+-- Created    : 2013-10-06
+-- Last update: 2013-10-06
+-- Platform   : SiLago
+-- Standard   : VHDL'08
 -------------------------------------------------------------------------------
--- Description: <cursor>
--------------------------------------------------------------------------------
--- Copyright (c) 2013 
+-- Copyright (c) 2013
 -------------------------------------------------------------------------------
 -- Contact    : Dimitrios Stathis <stathis@kth.se>
 -------------------------------------------------------------------------------
 -- Revisions  :
--- Date        Version  Author  Description
--- 2013-07-19  1.0      sadiq	Created
+-- Date        Version  Author                  Description
+-- 2013-10-06  1.0      sadiq      Created
 -------------------------------------------------------------------------------
 
 --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -38,7 +43,7 @@
 --This file is part of SiLago.                                             #
 --                                                                         #
 --    SiLago platform source code is distributed freely: you can           #
---    redistribute it and/or modify it under the terms of the GNU    	   #
+--    redistribute it and/or modify it under the terms of the GNU          #
 --    General Public License as published by the Free Software Foundation, #
 --    either version 3 of the License, or (at your option) any             #
 --    later version.                                                       #
@@ -53,37 +58,32 @@
 --                                                                         #
 --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
---! IEEE Library
-library ieee;
---! Use standard library
-use ieee.std_logic_1164.all;
---! Use numeric library for signed and unsigned arithmetics
-use ieee.numeric_std.all;
---! Use the top constant package that includes all the constants and type definitions
-use work.top_consts_types_package.all;
+LIBRARY IEEE;
+USE IEEE.std_logic_1164.ALL;
+USE ieee.numeric_std.ALL;
+USE work.top_consts_types_package.ALL;
+ENTITY register_row IS
+    --generic  (initial_vector : signed(REG_FILE_DATA_WIDTH-1 downto 0));
+    PORT
+    (
+        rst_n   : IN std_logic;
+        clk     : IN std_logic;
+        wr_enb  : IN std_logic;
+        reg_in  : IN signed(REG_FILE_DATA_WIDTH - 1 DOWNTO 0);
+        reg_out : OUT signed(REG_FILE_DATA_WIDTH - 1 DOWNTO 0));
+END register_row;
 
---! @brief Register row, one word of the data register file
---! @detail This is the word row of the register file
-entity register_row is
-	port(
-		rst_n	:in  std_logic; --! Reset signal, negative
-		clk     :in  std_logic; --! Clock 
-		wr_enb	:in  std_logic; --!	Write eneable signal
-		reg_in	:in  signed(REG_FILE_DATA_WIDTH-1 downto 0); --! Data input
-		reg_out	:out signed(REG_FILE_DATA_WIDTH-1 downto 0)); --! Data output
-end register_row;
+ARCHITECTURE behavioral OF register_row IS
 
---! @brief Architecture of the register file row
-architecture behavioral of register_row is
-begin
-	process(rst_n,clk,reg_in)
-	begin
-		if rst_n = '0' then
-			reg_out <= (others=>'0');
-		elsif clk'event and clk = '1' then
-			if wr_enb = '1' then
-				reg_out <= reg_in;
-			end if;
-		end if;
-	end process;
-end behavioral;
+BEGIN
+    PROCESS (rst_n, clk, reg_in)
+    BEGIN
+        IF rst_n = '0' THEN
+            reg_out <= (OTHERS => '0');
+        ELSIF clk'event AND clk = '1' THEN
+            IF wr_enb = '1' THEN
+                reg_out <= reg_in;
+            END IF;
+        END IF;
+    END PROCESS;
+END behavioral;

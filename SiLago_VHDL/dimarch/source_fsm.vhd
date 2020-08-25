@@ -1,6 +1,13 @@
 -------------------------------------------------------
---! @file
---! @brief crossbar_types_n_constants
+--! @file source_fsm.vhd
+--! @brief 
+--! @details 
+--! @author Muhammad Adeel Tajammul
+--! @version 1.0
+--! @date 
+--! @bug NONE
+--! @todo NONE
+--! @copyright  GNU Public License [GPL-3.0].
 -------------------------------------------------------
 ---------------- Copyright (c) notice -----------------------------------------
 --
@@ -11,24 +18,24 @@
 -- Any authorised use, copy or distribution should carry this copyright notice
 -- unaltered.
 -------------------------------------------------------------------------------
--- Title      : crossbar_types_n_constants
+-- Title      : 
 -- Project    : SiLago
 -------------------------------------------------------------------------------
--- File       : crossbar_types_n_constants.vhd
+-- File       : source_fsm.vhd
 -- Author     : Muhammad Adeel Tajammul
 -- Company    : KTH
 -- Created    : 
--- Last update: 2019-03-11
+-- Last update: 
 -- Platform   : SiLago
--- Standard   : VHDL'87
+-- Standard   : VHDL'08
 -------------------------------------------------------------------------------
--- Copyright (c) 2014 
+-- Copyright (c) 2014
 -------------------------------------------------------------------------------
 -- Contact    : Dimitrios Stathis <stathis@kth.se>
 -------------------------------------------------------------------------------
 -- Revisions  :
--- Date        Version  Author  		          Description
---				1.0     Muhammad Adeel Tajammul
+-- Date        Version  Author                  Description
+--             1.0      Muhammad Adeel Tajammul      Created
 -------------------------------------------------------------------------------
 
 --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -36,7 +43,7 @@
 --This file is part of SiLago.                                             #
 --                                                                         #
 --    SiLago platform source code is distributed freely: you can           #
---    redistribute it and/or modify it under the terms of the GNU    	   #
+--    redistribute it and/or modify it under the terms of the GNU          #
 --    General Public License as published by the Free Software Foundation, #
 --    either version 3 of the License, or (at your option) any             #
 --    later version.                                                       #
@@ -50,6 +57,13 @@
 --    along with SiLago.  If not, see <https://www.gnu.org/licenses/>.     #
 --                                                                         #
 --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
+
+-- This is a SRAM Tile which will be used to extend DRRA Fabric for memory communication
+-- be changed by changing the generics
+--
+--- Authors: Muhammad Adeel Tajammul: PhD student, ES, School of ICT, KTH, Kista.
+-- Contact: tajammul@kth.se
+---------------------------------------------------------------------------------
 
 
 library IEEE;

@@ -1,6 +1,13 @@
 -------------------------------------------------------
---! @file
---! @brief source_decoder
+--! @file source_decoder.vhd
+--! @brief 
+--! @details 
+--! @author Muhammad Adeel Tajammul
+--! @version 2.0
+--! @date 
+--! @bug NONE
+--! @todo NONE
+--! @copyright  GNU Public License [GPL-3.0].
 -------------------------------------------------------
 ---------------- Copyright (c) notice -----------------------------------------
 --
@@ -11,24 +18,25 @@
 -- Any authorised use, copy or distribution should carry this copyright notice
 -- unaltered.
 -------------------------------------------------------------------------------
--- Title      : source_decoder
+-- Title      : 
 -- Project    : SiLago
 -------------------------------------------------------------------------------
 -- File       : source_decoder.vhd
 -- Author     : Muhammad Adeel Tajammul
 -- Company    : KTH
 -- Created    : 
--- Last update: 2019-03-11
+-- Last update: 15.06.2016
 -- Platform   : SiLago
--- Standard   : VHDL'87
+-- Standard   : VHDL'08
 -------------------------------------------------------------------------------
--- Copyright (c) 2014 
+-- Copyright (c) 2014
 -------------------------------------------------------------------------------
 -- Contact    : Dimitrios Stathis <stathis@kth.se>
 -------------------------------------------------------------------------------
 -- Revisions  :
--- Date        Version  Author  		          Description
---            1.0      Muhammad Adeel Tajammul   Created
+-- Date        Version  Author                  Description
+--             1.0      Muhammad Adeel Tajammul      Created
+-- 15.06.2016  2.0      Arun Jayabalan               Rewritten the code to remove redundant logic
 -------------------------------------------------------------------------------
 
 --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
@@ -36,7 +44,7 @@
 --This file is part of SiLago.                                             #
 --                                                                         #
 --    SiLago platform source code is distributed freely: you can           #
---    redistribute it and/or modify it under the terms of the GNU    	     #
+--    redistribute it and/or modify it under the terms of the GNU          #
 --    General Public License as published by the Free Software Foundation, #
 --    either version 3 of the License, or (at your option) any             #
 --    later version.                                                       #
@@ -51,24 +59,28 @@
 --                                                                         #
 --~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~#
 
+--------------------------------------------------------------------------------
+-- This is a SRAM Tile which will be used to extend DRRA Fabric for memory communication
+-- be changed by changing the generics
+---------------------------------------------------------------------------------
 
 
 LIBRARY IEEE;
 USE IEEE.std_logic_1164.ALL;
 use ieee.NUMERIC_STD.all;
 use work.crossbar_types_n_constants.all;
-use ieee.numeric_std_unsigned.all;
+use ieee.numeric_std.all;
 --use work.drra_types_n_constants.all;
 use work.noc_types_n_constants.all;
 
 entity source_decoder is
 	generic(
-		This_ROW : std_logic_vector(ROW_WIDTH - 1 DOWNTO 0) := (OTHERS => '0');
-		This_COL : std_logic_vector(COL_WIDTH - 1 DOWNTO 0) := (OTHERS => '0');
 		VERTICAL : std_logic                                := '1');
 	port(
 		-- 		rst_n             : in	std_logic;
 		-- 		clk               : in	std_logic;
+		This_ROW 		  : IN std_logic_vector(ROW_WIDTH - 1 DOWNTO 0);
+		This_COL 		  : IN std_logic_vector(COL_WIDTH - 1 DOWNTO 0);
 		NOC_BUS_IN        : IN  NOC_BUS_TYPE;
 		DIRECTION_OUT     : OUT CORSSBAR_INSTRUCTION_RECORD_TYPE;
 		RETRANSMIT        : OUT STD_LOGIC;
@@ -283,6 +295,8 @@ begin
 				END IF;							    ---[S]---[ ]---[ ]---		R1
 
 			END IF; 		-- Row Comparision BLOCK
+		ELSE
+			src_locate <= adjacents;
 		END IF; --NOC_BUS_IN.bus_enable = '1
 	END process p_src_ident;
 
@@ -332,6 +346,8 @@ begin
 				END IF;							---[D]---[ ]---[ ]---		R1
 
 			END IF; 		-- Row Comparision BLOCK
+		ELSE
+			dst_locate <= SAME;
 		END IF; --NOC_BUS_IN.bus_enable = '1
     END process p_dst_ident;
 --§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§§
